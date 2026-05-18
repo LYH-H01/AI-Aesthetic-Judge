@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(/.claude/skills/dev-cr/**)",
+      "Edit(/.claude/skills/CR-new/**)",
+      "Edit(/.claude/skills/dev-IID/**)",
+      "Bash(python -c ' *)",
+      "Bash(python scripts/fill_excel.py del-test-data.json 初试)",
+      "Bash(cd \"d:\\\\实习资料\\\\面试-产出\\\\devCR-new\\\\.claude\\\\skills\\\\del-excel-filler\" && mv \"潘一昂_20260514_交付面试评价表.xlsx\" \"d:\\\\实习资料\\\\面试-产出\\\\devCR-new\\\\del-test\\\\潘一昂_20260514_面试评价表.xlsx\" && ls -la \"d:\\\\实习资料\\\\面试-产出\\\\devCR-new\\\\del-test\\\\潘一昂_20260514_面试评价表.xlsx\")",
+      "Edit(/.claude/skills/sale-excel-filler-local-v2/**)"
+    ],
+    "additionalDirectories": [
+      "d:\\实习资料\\面试-产出\\devCR-new\\.claude\\skills\\dev-cr",
+      "d:\\实习资料\\面试-产出\\devCR-new\\.claude\\skills",
+      "d:\\实习资料\\面试-产出\\devCR-new\\.claude\\skills\\del-excel-filler"
+    ]
+  }
+}
