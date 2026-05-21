@@ -1,25 +1,23 @@
 ---
 name: del-IID
 description: |
-  交付岗位面试综合评估工具（Interview IDentification）。当用户提供了交付候选人的
-  简历评分结果（来自 del-cr）和面试对话文本，需要补全评分、对比简历与面试表现、
-  给出综合录用建议时，必须使用本 skill。适用于所有涉及交付岗位面试评估、
-  简历与面试交叉验证、候选人最终评分的场景。
-  只要用户同时提供了 del-cr 的简历分析报告（或简历评分）和面试对话记录，
-  并要求"面试评估"、"补全评分"、"对比分析"、"综合评价"、"录用建议"，即触发本 skill。
+  交付/售前POC岗位面试综合评估工具（Interview IDentification）。当用户提供了交付或售前POC候选人的简历评分结果（来自 del-cr）和面试对话文本，需要补全评分、对比简历与面试表现、给出综合录用建议时，必须使用本 skill。适用于所有涉及交付岗位、售前POC岗位面试评估、简历与面试交叉验证、候选人最终评分的场景。
+  只要用户同时提供了 del-cr 的简历分析报告（或简历评分）和面试对话记录，并要求"面试评估"、"补全评分"、"对比分析"、"综合评价"、"录用建议"，即触发本 skill。
+  **必须先确认岗位类型**：根据简历评分中的岗位类型（交付/售前POC），使用对应的评分标准进行面试评估。
   **黑白灰和评分规则详见 references/ 文件夹**
 ---
 
-# del-IID — 交付岗位面试综合评估
+# del-IID — 交付/售前POC岗位面试综合评估
 
 ## 功能定位
 
 接收 del-cr 简历评分 + 面试对话文本 → 补全评分 + 黑白灰判定 + 录用建议
 
-评分维度和规则文件：
-- [references/delInterviewBlackWhite.md](references/delInterviewBlackWhite.md) — 黑白灰清单
-- [references/delInterviewScoringRubric.md](references/delInterviewScoringRubric.md) — 评分标准
-- [references/delHiringRules.md](references/delHiringRules.md) — 录用判定规则
+评分维度和规则文件（根据岗位类型选择）：
+- [references/delInterviewBlackWhite.md](references/delInterviewBlackWhite.md) — 黑白灰清单（通用）
+- [references/delInterviewScoringRubric.md](references/delInterviewScoringRubric.md) — 交付岗位面试评分标准
+- [references/delInterviewScoringRubricPOC.md](references/delInterviewScoringRubricPOC.md) — 售前POC岗位面试评分标准
+- [references/delHiringRules.md](references/delHiringRules.md) — 录用判定规则（通用）
 
 ---
 
@@ -27,7 +25,7 @@ description: |
 
 ### 输入一：简历评分结果（来自 del-cr）
 
-需包含：各维度分数、黑白灰结论、亮点/疑点/风险点
+需包含：各维度分数、黑白灰结论、**岗位类型（交付/售前POC）**、亮点/疑点/风险点
 
 ### 输入二：面试对话文本
 
@@ -36,6 +34,12 @@ description: |
 ---
 
 ## 执行流程
+
+### 第零步：确认岗位类型
+
+**必须先确认简历评分结果中的岗位类型**，根据类型选择对应的评分标准：
+- 交付岗位 → 使用 `delInterviewScoringRubric.md`
+- 售前POC岗位 → 使用 `delInterviewScoringRubricPOC.md`
 
 ### 第一步：解析输入
 
@@ -87,8 +91,12 @@ description: |
 ### 整体结论（第一行）
 
 ```
-**[评分: {总分} | 评级: {A+/A/B/C} | 黑白灰: {黑/灰/白} | 录用建议: {A+/A/B/C}]**
+**【{交付岗/售前POC}】 [评分: {总分} | 评级: {A+/A/B/C} | 黑白灰: {黑/灰/白} | 录用建议: {A+/A/B/C}]**
 ```
+
+示例：
+- **【交付岗】** [评分: 85 | 评级: A | 黑白灰: 白 | 录用建议: A]
+- **【售前POC】** [评分: 78 | 评级: B | 黑白灰: 白 | 录用建议: B]
 
 ### 模块一：黑白灰判定表
 
@@ -106,7 +114,7 @@ description: |
 | 兴趣 | X | Y | Z | 简历/面试 |
 | ... | ... | ... | ... | ... |
 
-### 模块三：对比分析
+### 模块三：对比简历分析
 
 | 分类 | 维度 | 说明 |
 |------|------|------|
@@ -117,7 +125,7 @@ description: |
 ### 模块四：综合评价
 
 ```
-综合评价：{整体表现}。核心优势：{1-2点}。存在不足：{1-2点}。
+【{交付岗/售前POC}】综合评价：{整体表现}。核心优势：{1-2点}。存在不足：{1-2点}。
 黑白灰：{黑/灰/白}。录用建议：{A+/A/B/C}。
 ```
 
