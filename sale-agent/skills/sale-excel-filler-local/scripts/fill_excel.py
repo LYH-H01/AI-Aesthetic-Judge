@@ -22,34 +22,25 @@ def fill_excel(file_path: str, data: dict) -> dict:
     wb = openpyxl.load_workbook(file_path)
     ws = wb.active
 
-    # ========== 关键修复1：先保存所有需要恢复的单元格填充色（合并前） ==========
-    # 保存合并单元格区域的填充色（覆盖所有关键高亮区域）
+    # ========== 保存需要恢复的单元格填充色（取消合并前） ==========
     fill_color_map = {}
-    # 亮点/疑点/风险点区域
-    for row in [10, 11, 12]:
-        for col in ['A', 'B', 'C', 'D', 'E', 'F']:
-            cell = f"{col}{row}"
-            fill = ws[cell].fill
-            if fill and fill.fill_type == 'solid':
-                fill_color_map[cell] = fill.fgColor.rgb
-    # G10-I10区域
-    for col in ['G', 'H', 'I']:
-        cell = f"{col}10"
-        fill = ws[cell].fill
+    # 亮点/疑点/风险点/建议区域（行11）
+    for cell_ref in ['A11', 'G11', 'J11', 'N11']:
+        fill = ws[cell_ref].fill
         if fill and fill.fill_type == 'solid':
-            fill_color_map[cell] = fill.fgColor.rgb
-    # J10-L10区域（原脚本遗漏）
-    for col in ['J', 'K', 'L']:
-        cell = f"{col}10"
-        fill = ws[cell].fill
-        if fill and fill.fill_type == 'solid':
-            fill_color_map[cell] = fill.fgColor.rgb
+            fill_color_map[cell_ref] = fill.fgColor.rgb
 
-    # 保存原始合并范围（仅用于后续恢复非关键区域）
+    # 保存原始合并范围
     original_merged_ranges = list(ws.merged_cells.ranges)
 
     # ========== 取消合并（仅必要区域） ==========
-    to_unmerge = ['A3:C3', 'G3:I3', 'A4:F4', 'G4:I4', 'A10:F10', 'A11:F11', 'A12:F12', 'G10:I10', 'J10:L10', 'A40:B43', 'G42:I42', 'J42:L42']
+    to_unmerge = [
+        'B8:D8',            # 离职原因
+        'A11:F11',          # 亮点
+        'G11:I11',          # 疑点
+        'J11:M11',          # 风险点
+        'N11:P11',          # 建议
+    ]
     for cell_range in to_unmerge:
         try:
             ws.unmerge_cells(cell_range)
@@ -61,7 +52,7 @@ def fill_excel(file_path: str, data: dict) -> dict:
     # ========== 填写简历信息 ==========
     resume_data = data.get("resume_data", {})
     if resume_data:
-        # 基础信息
+        # 基础信息行3（标签在A/C/E列，数据在B/D/F列）
         if resume_data.get("姓名"):
             ws["B3"] = resume_data["姓名"]
             filled_fields.append("B3: 姓名")
@@ -71,97 +62,114 @@ def fill_excel(file_path: str, data: dict) -> dict:
         if resume_data.get("出生年月"):
             ws["F3"] = resume_data["出生年月"]
             filled_fields.append("F3: 出生年月")
+
+        # 基础信息行4
+        if resume_data.get("民族"):
+            ws["B4"] = resume_data["民族"]
+            filled_fields.append("B4: 民族")
+        if resume_data.get("电话"):
+            ws["D4"] = resume_data["电话"]
+            filled_fields.append("D4: 电话")
+        if resume_data.get("邮箱"):
+            ws["F4"] = resume_data["邮箱"]
+            filled_fields.append("F4: 邮箱")
+
+        # 基础信息行5
         if resume_data.get("应聘岗位"):
-            ws["B4"] = resume_data["应聘岗位"]
-            filled_fields.append("B4: 应聘岗位")
-        if resume_data.get("意向城市"):
-            ws["D4"] = resume_data["意向城市"]
-            filled_fields.append("D4: 意向城市")
-        if resume_data.get("原公司类型"):
-            ws["F4"] = resume_data["原公司类型"]
-            filled_fields.append("F4: 原公司类型")
+            ws["B5"] = resume_data["应聘岗位"]
+            filled_fields.append("B5: 应聘岗位")
+        if resume_data.get("工作地点"):
+            ws["D5"] = resume_data["工作地点"]
+            filled_fields.append("D5: 工作地点")
         if resume_data.get("打败的竞争对手"):
-            ws["G4"] = resume_data["打败的竞争对手"]
-            filled_fields.append("G4: 打败的竞争对手")
+            ws["F5"] = resume_data["打败的竞争对手"]
+            filled_fields.append("F5: 打败的竞争对手")
+
+        # 基础信息行6
         if resume_data.get("第一学历学校"):
-            ws["B5"] = resume_data["第一学历学校"]
-            filled_fields.append("B5: 第一学历学校")
+            ws["B6"] = resume_data["第一学历学校"]
+            filled_fields.append("B6: 第一学历学校")
         if resume_data.get("专业"):
-            ws["D5"] = resume_data["专业"]
-            filled_fields.append("D5: 专业")
-        if resume_data.get("底薪/绩效/奖金"):
-            ws["E5"] = resume_data["底薪/绩效/奖金"]
-            filled_fields.append("E5: 底薪/绩效/奖金")
+            ws["D6"] = resume_data["专业"]
+            filled_fields.append("D6: 专业")
+        if resume_data.get("月底薪/绩效/奖金"):
+            ws["F6"] = resume_data["月底薪/绩效/奖金"]
+            filled_fields.append("F6: 月底薪/绩效/奖金")
 
-        # 人才类型（F6）
+        # 基础信息行7
+        if resume_data.get("单元九档学历占比"):
+            ws["B7"] = resume_data["单元九档学历占比"]
+            filled_fields.append("B7: 单元九档学历占比")
+        if resume_data.get("直接上级"):
+            ws["D7"] = resume_data["直接上级"]
+            filled_fields.append("D7: 直接上级")
         if resume_data.get("人才类型"):
-            ws["F6"] = resume_data["人才类型"]
-            filled_fields.append("F6: 人才类型")
+            ws["F7"] = resume_data["人才类型"]
+            filled_fields.append("F7: 人才类型")
 
-        # 离职原因（B7）
+        # 基础信息行8
         if resume_data.get("离职原因"):
-            ws["B7"] = resume_data["离职原因"]
-            filled_fields.append("B7: 离职原因")
-
-        # HR/人才来源（F7，明确标注：E7是标签，F7填值）
+            ws["B8"] = resume_data["离职原因"]
+            filled_fields.append("B8: 离职原因")
         if resume_data.get("HR/人才来源"):
-            ws["F7"] = resume_data["HR/人才来源"]
-            filled_fields.append("F7: HR/人才来源")
+            ws["F8"] = resume_data["HR/人才来源"]
+            filled_fields.append("F8: HR/人才来源")
 
-        # 亮点/疑点/风险点（仅简历填写，前缀强制添加）
+        # 亮点/疑点/风险点/建议（行11，一行四格）
         if resume_data.get("亮点"):
-            ws["A10"] = "亮点：" + resume_data["亮点"]
-            filled_fields.append("A10: 亮点")
+            ws["A11"] = "亮点：" + resume_data["亮点"]
+            filled_fields.append("A11: 亮点")
         if resume_data.get("疑点"):
-            ws["A11"] = "疑点：" + resume_data["疑点"]
-            filled_fields.append("A11: 疑点")
+            ws["G11"] = "疑点：" + resume_data["疑点"]
+            filled_fields.append("G11: 疑点")
         if resume_data.get("风险点"):
-            ws["A12"] = "风险点：" + resume_data["风险点"]
-            filled_fields.append("A12: 风险点")
+            ws["J11"] = "风险点：" + resume_data["风险点"]
+            filled_fields.append("J11: 风险点")
+        if resume_data.get("建议"):
+            ws["N11"] = "建议：" + resume_data["建议"]
+            filled_fields.append("N11: 建议")
 
-    # ========== 填写面试信息（支持：初试/线下协同初试/复试/终试） ==========
+    # ========== 填写面试信息 ==========
     interview_data = data.get("interview_data", {})
     if interview_data:
         round_type = interview_data.get("round_type", "初试")
 
-        # 轮次列映射（严格按SKILL.md规则）
+        # 轮次列映射（新模板：复试/终试的列有变化）
         round_mapping = {
-            "初试": {"score_col": "D", "basis_col": "E", "result_col": "D", "rating_col": "E"},
-            "线下协同初试": {"score_col": "G", "basis_col": "H", "result_col": "G", "rating_col": "H"},
-            "复试": {"score_col": "J", "basis_col": "K", "result_col": "J", "rating_col": "K"},
-            "终试": {"score_col": "M", "basis_col": "N", "result_col": "M", "rating_col": "N"},
+            "初试":           {"score_col": "D", "basis_col": "E"},
+            "线下协同初试":    {"score_col": "G", "basis_col": "H"},
+            "复试":           {"score_col": "J", "basis_col": "L"},
+            "终试":           {"score_col": "N", "basis_col": "P"},
         }
         # 默认初试
         col_mapping = round_mapping.get(round_type, round_mapping["初试"])
         score_col = col_mapping["score_col"]
         basis_col = col_mapping["basis_col"]
-        result_col = col_mapping["result_col"]
-        rating_col = col_mapping["rating_col"]
 
-        # 评分项映射（行号严格对应SKILL.md，包含单元三板斧强制填写）
+        # 评分项行号映射（新模板：比旧版减1行，行16-34）
         score_mapping = {
             # 底色
-            "底色-兴趣": 17,
-            "底色-主动侵略性": 18,
-            "底色-目标刚性": 19,
-            "底色-结果闭环": 20,
-            "底色-信任构建能力": 21,
-            "底色-人性洞察能力": 22,
-            "底色-长期价值绑定": 23,
+            "底色-兴趣": 16,
+            "底色-主动侵略性": 17,
+            "底色-目标刚性": 18,
+            "底色-结果闭环": 19,
+            "底色-信任构建能力": 20,
+            "底色-人性洞察能力": 21,
+            "底色-长期价值绑定": 22,
             # 岗位三板斧
-            "岗位三板斧-搞成铁杆能力": 24,
-            "岗位三板斧-铁杆数量": 25,
-            "岗位三板斧-铁杆质量": 26,
-            "岗位三板斧-信息来源": 27,
-            "岗位三板斧-信息收集和整理能力": 28,
-            "岗位三板斧-情报质量": 29,
-            "岗位三板斧-产品知识": 30,
-            "岗位三板斧-行业知识": 31,
-            "岗位三板斧-输出质量": 32,
+            "岗位三板斧-搞成铁杆能力": 23,
+            "岗位三板斧-铁杆数量": 24,
+            "岗位三板斧-铁杆质量": 25,
+            "岗位三板斧-信息来源": 26,
+            "岗位三板斧-信息收集和整理能力": 27,
+            "岗位三板斧-情报质量": 28,
+            "岗位三板斧-产品知识": 29,
+            "岗位三板斧-行业知识": 30,
+            "岗位三板斧-输出质量": 31,
             # 单元三板斧（所有岗位强制填写）
-            "单元三板斧-画施工图": 33,
-            "单元三板斧-选好骨干": 34,
-            "单元三板斧-提高人效": 35,
+            "单元三板斧-画施工图": 32,
+            "单元三板斧-选好骨干": 33,
+            "单元三板斧-提高人效": 34,
         }
 
         basis_data = interview_data.get("评分依据", {})
@@ -176,12 +184,12 @@ def fill_excel(file_path: str, data: dict) -> dict:
             "底色-情商-长期价值绑定": "底色-长期价值绑定",
         }
 
-        # 填写评分和依据（跳过AI能力字段）
+        # 填写评分和依据
         for field, row in score_mapping.items():
-            # 跳过AI能力（SKILL.md明确不填写）
+            # 跳过AI能力（行15单独处理）
             if "AI能力" in field:
                 continue
-            
+
             # 先匹配原字段，再匹配别名
             value = interview_data.get(field)
             basis = basis_data.get(field)
@@ -190,7 +198,7 @@ def fill_excel(file_path: str, data: dict) -> dict:
                 if alias:
                     value = interview_data.get(alias)
                     basis = basis_data.get(alias)
-            
+
             # 填写评分
             if value:
                 ws[f"{score_col}{row}"] = value
@@ -200,33 +208,39 @@ def fill_excel(file_path: str, data: dict) -> dict:
                 ws[f"{basis_col}{row}"] = basis
                 filled_fields.append(f"{basis_col}{row}: {field}依据")
 
-        # 面试结果（行37，SKILL.md明确：行36/38不填）
-        if interview_data.get("面试结果"):
-            ws[f"{result_col}37"] = interview_data["面试结果"]
-            filled_fields.append(f"{result_col}37: 面试结果")
+        # AI能力（行15，单独处理）
+        if interview_data.get("AI能力"):
+            ws[f"{score_col}15"] = interview_data["AI能力"]
+            filled_fields.append(f"{score_col}15: AI能力")
+        if basis_data.get("AI能力"):
+            ws[f"{basis_col}15"] = basis_data["AI能力"]
+            filled_fields.append(f"{basis_col}15: AI能力依据")
 
-        # 面试评级（行37，对应评级列）
-        if interview_data.get("人才类型"):
-            ws[f"{rating_col}37"] = interview_data["人才类型"]
-            filled_fields.append(f"{rating_col}37: 面试评级")
+        # 面试评分（加权总分，行35）
+        if interview_data.get("面试评分"):
+            ws[f"{score_col}35"] = interview_data["面试评分"]
+            filled_fields.append(f"{score_col}35: 面试评分")
+
+        # 录用结果（A+/A/B，行36）
+        if interview_data.get("录用结果"):
+            ws[f"{score_col}36"] = interview_data["录用结果"]
+            filled_fields.append(f"{score_col}36: 录用结果")
 
     # ========== 恢复合并与样式 ==========
     thin = Side(style='thin', color='FF000000')
 
-    # 步骤1：重新合并关键单元格（先合并，再恢复样式）
+    # 重新合并关键单元格（先合并，再恢复样式）
     merge_cells_list = [
-        'A10:F10', 'A11:F11', 'A12:F12', 
-        'G10:I10', 'J10:L10', 
-        'A40:B43', 'G42:I42', 'J42:L42'
+        'A11:F11', 'G11:I11', 'J11:M11', 'N11:P11',
     ]
     for cell_range in merge_cells_list:
         try:
             ws.merge_cells(cell_range)
-        except Exception as e:
+        except Exception:
             pass  # 已合并则忽略
 
-    # 步骤2：恢复原始合并范围（非关键区域）
-    skip_ranges = ['A10:F10', 'A11:F11', 'A12:F12', 'G10:I10', 'J10:L10']
+    # 恢复原始合并范围（非关键区域）
+    skip_ranges = ['A11:F11', 'G11:I11', 'J11:M11', 'N11:P11']
     for merged_range in original_merged_ranges:
         range_str = str(merged_range)
         if any(skip in range_str for skip in skip_ranges):
@@ -236,30 +250,28 @@ def fill_excel(file_path: str, data: dict) -> dict:
         except:
             pass
 
-    # ========== 关键修复2：恢复所有保存的填充色 ==========
+    # 恢复所有保存的填充色
     for cell, rgb in fill_color_map.items():
         try:
             ws[cell].fill = PatternFill(fill_type='solid', fgColor=rgb)
-        except Exception as e:
+        except Exception:
             pass
 
     # 自动换行（保证长文本显示）
     wrap_alignment = Alignment(wrap_text=True, vertical='top', horizontal='left')
-    ws['A10'].alignment = wrap_alignment
     ws['A11'].alignment = wrap_alignment
-    ws['A12'].alignment = wrap_alignment
+    ws['G11'].alignment = wrap_alignment
+    ws['J11'].alignment = wrap_alignment
+    ws['N11'].alignment = wrap_alignment
 
     # 边框样式（仅补充缺失边框，不覆盖原有样式）
-    ws['F10'].border = Border(right=thin, top=thin, bottom=thin)
     ws['F11'].border = Border(right=thin, top=thin, bottom=thin)
-    ws['F12'].border = Border(right=thin, top=thin, bottom=thin)
-    ws['G10'].border = Border(left=thin, top=thin, bottom=thin)
+    ws['I11'].border = Border(right=thin, top=thin, bottom=thin)
+    ws['M11'].border = Border(right=thin, top=thin, bottom=thin)
 
-    # 行高设置（固定行高）
-    ws.row_dimensions[10].height = 36
+    # 行高设置
     ws.row_dimensions[11].height = 36
-    ws.row_dimensions[12].height = 36
-    
+
     # 保存并关闭文件
     wb.save(file_path)
     wb.close()
@@ -270,7 +282,6 @@ def fill_excel(file_path: str, data: dict) -> dict:
 def main():
     """命令行入口"""
     import json
-    import sys
 
     if len(sys.argv) < 3:
         print("使用方法: python fill_excel.py <Excel文件.xlsx> <数据文件.json> [轮次]")
